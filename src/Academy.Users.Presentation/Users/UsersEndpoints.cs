@@ -54,7 +54,7 @@ public static class UsersEndpoints
             }
 
             var failurePayload = new { status = "ServerError", message = result.Message };
-            return Results.StatusCode(StatusCodes.Status500InternalServerError, failurePayload);
+            return Results.Json(failurePayload, statusCode: StatusCodes.Status500InternalServerError);
         });
 
         return endpoints;
