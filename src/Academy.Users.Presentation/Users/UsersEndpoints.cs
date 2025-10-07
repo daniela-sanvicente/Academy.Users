@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.OpenApi.Any;
 
 namespace Academy.Users.Presentation.Users;
 
@@ -25,7 +26,6 @@ public static class UsersEndpoints
                     Status = "InvalidData",
                     Message = "El cuerpo de la solicitud es obligatorio."
                 };
-                
                 return Results.BadRequest(errorPayload);
             }
 
@@ -56,7 +56,6 @@ public static class UsersEndpoints
                     Message = result.Message,
                     Errors = result.Errors
                 };
-
                 return Results.BadRequest(validationPayload);
             }
 
@@ -67,7 +66,6 @@ public static class UsersEndpoints
                     Status = "UserNotFound",
                     Message = result.Message
                 };
-
                 return Results.BadRequest(userNotFoundPayload);
             }
 
@@ -76,7 +74,6 @@ public static class UsersEndpoints
                 Status = "ServerError",
                 Message = result.Message
             };
-
             return Results.Json(failurePayload, statusCode: StatusCodes.Status500InternalServerError);
         })
         .WithTags("Usuarios")
@@ -94,6 +91,12 @@ public static class UsersEndpoints
             operation.Responses[StatusCodes.Status200OK.ToString()].Description = "Actualización exitosa.";
             operation.Responses[StatusCodes.Status400BadRequest.ToString()].Description = "Solicitud inválida o usuario inexistente.";
             operation.Responses[StatusCodes.Status500InternalServerError.ToString()].Description = "Error interno al persistir los cambios.";
+
+            if (operation.RequestBody?.Content.TryGetValue("application/json", out var requestContent) == true)
+            {
+                requestContent.Example = new OpenApiString("{\n  \"firstName\": \"Ana María\",\n  \"lastName\": \"López Hernández\",\n  \"phoneNumber\": \"+525511122233\",\n  \"address\": \"Av. Reforma 500, Piso 12, Ciudad de México\"\n}");
+            }
+
             return operation;
         });
 
