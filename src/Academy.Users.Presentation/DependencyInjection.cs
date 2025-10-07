@@ -13,7 +13,10 @@ public static class DependencyInjection
 
     public static WebApplication MapPresentationEndpoints(this WebApplication app)
     {
-        app.MapUsersEndpoints();
+        var apiGroup = app.MapGroup("/api/v1");
+
+        apiGroup.MapUsersEndpoints();
+
         return app;
     }
 }
