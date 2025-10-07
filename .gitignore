@@ -482,3 +482,21 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+*.swo
+
+# Local development settings
+appsettings.Development.json
+appsettings.Local.json
+
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Folders to be ignored
+**/bin/
+**/obj/
+
+
+# Visual Studio files
+.vs/
