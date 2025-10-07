@@ -1,4 +1,6 @@
+using Academy.Users.Application.Users;
 using Academy.Users.Infrastructure.Persistence;
+using Academy.Users.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,11 +13,9 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         var hasConnectionString = string.IsNullOrWhiteSpace(connectionString) == false;
-        if (hasConnectionString)
-        {
-            services.AddDbContext<AcademyUsersDbContext>(options => options.UseSqlite(connectionString));
-        }
-
+        var resolvedConnectionString = hasConnectionString ? connectionString! : "Data Source=academy_users_local.db";
+        services.AddDbContext<AcademyUsersDbContext>(options => options.UseSqlite(resolvedConnectionString));
+        services.AddScoped<IUsersRepository, UsersRepository>();
         return services;
     }
 }
