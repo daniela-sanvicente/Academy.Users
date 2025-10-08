@@ -1,12 +1,13 @@
-using System.IO;
-using System.Linq;
-using System.Text;
-using Microsoft.AspNetCore.Builder;
 using Academy.Users.Application.Users.Commands.UpdateUser;
 using Academy.Users.Presentation.Users;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace Academy.Users.Presentation.Tests.Users;
 
@@ -15,11 +16,11 @@ public class UsersEndpointsTests
     [Fact]
     public async Task MapUsersEndpoints_WhenUpdateSucceeds_ReturnsOk()
     {
-        var service = new FakeUpdateUserPersonalInformationService
+        var sender = new FakeSender
         {
             ResultToReturn = UpdateUserResult.Success(new UpdateUserResponse(1, "Ana", "Lopez", "5511122233", "Direccion", "ACTIVE", "ok"), "ok")
         };
-        var (endpoint, app) = CreateEndpoint(service);
+        var (endpoint, app) = CreateEndpoint(sender);
         await using var _ = app;
         using var scope = app.Services.CreateScope();
         var context = CreateHttpContext(scope.ServiceProvider, endpoint, "/api/v1/users/1", """{"firstName":"Ana"}""");
@@ -29,15 +30,15 @@ public class UsersEndpointsTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         var body = await ReadBodyAsync(context);
         Assert.Contains("\"userId\":1", body);
-        Assert.Equal(1, service.ReceivedCommand?.UserId);
+        Assert.Equal(1, sender.ReceivedCommand?.UserId);
     }
 
     [Fact]
     public async Task MapUsersEndpoints_WhenValidationFails_ReturnsBadRequest()
     {
         var result = UpdateUserResult.ValidationFailure(new[] { "error" }, "Invalid");
-        var service = new FakeUpdateUserPersonalInformationService { ResultToReturn = result };
-        var (endpoint, app) = CreateEndpoint(service);
+        var sender = new FakeSender { ResultToReturn = result };
+        var (endpoint, app) = CreateEndpoint(sender);
         await using var _ = app;
         using var scope = app.Services.CreateScope();
         var context = CreateHttpContext(scope.ServiceProvider, endpoint, "/api/v1/users/2", """{"phoneNumber":"123"}""");
@@ -52,11 +53,11 @@ public class UsersEndpointsTests
     [Fact]
     public async Task MapUsersEndpoints_WhenUserNotFound_ReturnsBadRequest()
     {
-        var service = new FakeUpdateUserPersonalInformationService
+        var sender = new FakeSender
         {
             ResultToReturn = UpdateUserResult.UserNotFound("missing")
         };
-        var (endpoint, app) = CreateEndpoint(service);
+        var (endpoint, app) = CreateEndpoint(sender);
         await using var _ = app;
         using var scope = app.Services.CreateScope();
         var context = CreateHttpContext(scope.ServiceProvider, endpoint, "/api/v1/users/9", """{"firstName":"Ana"}""");
@@ -71,11 +72,11 @@ public class UsersEndpointsTests
     [Fact]
     public async Task MapUsersEndpoints_WhenPersistenceFails_ReturnsServerError()
     {
-        var service = new FakeUpdateUserPersonalInformationService
+        var sender = new FakeSender
         {
             ResultToReturn = UpdateUserResult.PersistenceFailure("fail")
         };
-        var (endpoint, app) = CreateEndpoint(service);
+        var (endpoint, app) = CreateEndpoint(sender);
         await using var _ = app;
         using var scope = app.Services.CreateScope();
         var context = CreateHttpContext(scope.ServiceProvider, endpoint, "/api/v1/users/3", """{"firstName":"Ana"}""");
@@ -90,11 +91,11 @@ public class UsersEndpointsTests
     [Fact]
     public async Task MapUsersEndpoints_WhenBodyMissing_ReturnsBadRequestWithoutInvokingService()
     {
-        var service = new FakeUpdateUserPersonalInformationService
+        var sender = new FakeSender
         {
             ResultToReturn = UpdateUserResult.Success(new UpdateUserResponse(1, "", "", "", "", "", ""), "")
         };
-        var (endpoint, app) = CreateEndpoint(service);
+        var (endpoint, app) = CreateEndpoint(sender);
         await using var _ = app;
         using var scope = app.Services.CreateScope();
         var context = CreateHttpContext(scope.ServiceProvider, endpoint, "/api/v1/users/4", null);
@@ -102,13 +103,13 @@ public class UsersEndpointsTests
         await endpoint.RequestDelegate!(context);
 
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
-        Assert.Null(service.ReceivedCommand);
+        Assert.Null(sender.ReceivedCommand);
     }
 
-    private static (RouteEndpoint Endpoint, WebApplication App) CreateEndpoint(IUpdateUserPersonalInformationService service)
+    private static (RouteEndpoint Endpoint, WebApplication App) CreateEndpoint(ISender sender)
     {
         var builder = WebApplication.CreateBuilder();
-        builder.Services.AddSingleton(service);
+        builder.Services.AddSingleton(sender);
         var app = builder.Build();
         var group = app.MapGroup("/api/v1");
         group.MapUsersEndpoints();
@@ -153,15 +154,31 @@ public class UsersEndpointsTests
         return await reader.ReadToEndAsync();
     }
 
-    private sealed class FakeUpdateUserPersonalInformationService : IUpdateUserPersonalInformationService
+    private sealed class FakeSender : ISender
     {
         public UpdateUserResult ResultToReturn { get; set; } = UpdateUserResult.Success(new UpdateUserResponse(0, "", "", "", "", "", ""), "");
         public UpdateUserCommand? ReceivedCommand { get; private set; }
 
-        public Task<UpdateUserResult> UpdateAsync(UpdateUserCommand command, CancellationToken cancellationToken)
+        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
         {
-            ReceivedCommand = command;
-            return Task.FromResult(ResultToReturn);
+            if (request is UpdateUserCommand command)
+            {
+                ReceivedCommand = command;
+                return Task.FromResult((TResponse)(object)ResultToReturn);
+            }
+
+            return Task.FromResult(default(TResponse)!);
+        }
+
+        public Task<object?> Send(object request, CancellationToken cancellationToken)
+        {
+            if (request is UpdateUserCommand command)
+            {
+                ReceivedCommand = command;
+                return Task.FromResult<object?>(ResultToReturn);
+            }
+
+            return Task.FromResult<object?>(null);
         }
     }
 }

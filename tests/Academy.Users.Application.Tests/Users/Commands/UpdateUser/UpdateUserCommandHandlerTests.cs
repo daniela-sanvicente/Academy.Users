@@ -4,16 +4,16 @@ using Academy.Users.Domain.Users;
 
 namespace Academy.Users.Application.Tests.Users.Commands.UpdateUser;
 
-public class UpdateUserPersonalInformationServiceTests
+public class UpdateUserCommandHandlerTests
 {
     [Fact]
     public async Task UpdateAsync_WithNoFieldsProvided_ReturnsValidationFailure()
     {
         var repository = new FakeUsersRepository();
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(1, null, null, null, null);
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.ValidationFailure, result.ResultType);
@@ -24,10 +24,10 @@ public class UpdateUserPersonalInformationServiceTests
     public async Task UpdateAsync_WithEmptyFields_ReturnsValidationFailure()
     {
         var repository = new FakeUsersRepository();
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(1, " ", " ", null, " ");
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.ValidationFailure, result.ResultType);
@@ -40,10 +40,10 @@ public class UpdateUserPersonalInformationServiceTests
     public async Task UpdateAsync_WithInvalidPhoneNumber_ReturnsValidationFailure()
     {
         var repository = new FakeUsersRepository();
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(1, null, null, "12345", null);
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.ValidationFailure, result.ResultType);
@@ -54,10 +54,10 @@ public class UpdateUserPersonalInformationServiceTests
     public async Task UpdateAsync_WhenUserNotFound_ReturnsUserNotFound()
     {
         var repository = new FakeUsersRepository();
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(42, "Ana", "Lopez", null, null);
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.UserNotFound, result.ResultType);
@@ -80,10 +80,10 @@ public class UpdateUserPersonalInformationServiceTests
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
         var repository = new FakeUsersRepository { UserToReturn = existingUser };
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(existingUser.Id, "Ana", "Lopez", "5511122233", "Direccion");
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.Success, result.ResultType);
@@ -109,10 +109,10 @@ public class UpdateUserPersonalInformationServiceTests
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
         var repository = new FakeUsersRepository { UserToReturn = existingUser, UpdateResult = false };
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(existingUser.Id, "Ana Maria", "Lopez", "5511122233", "Direccion");
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.PersistenceFailure, result.ResultType);
@@ -135,10 +135,10 @@ public class UpdateUserPersonalInformationServiceTests
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
         var repository = new FakeUsersRepository { UserToReturn = existingUser };
-        var service = new UpdateUserPersonalInformationService(repository);
+        var handler = new UpdateUserCommandHandler(repository);
         var command = new UpdateUserCommand(existingUser.Id, " Ana Maria ", null, "+52 55 1112 2233", " Nueva direccion ");
 
-        var result = await service.UpdateAsync(command, CancellationToken.None);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(UpdateUserResultType.Success, result.ResultType);

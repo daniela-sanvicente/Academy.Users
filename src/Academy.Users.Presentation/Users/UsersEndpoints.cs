@@ -1,4 +1,5 @@
 using Academy.Users.Application.Users.Commands.UpdateUser;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
@@ -17,7 +18,7 @@ public static class UsersEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/users/{userId:int}", async (int userId, UpdateUserRequestDto request, IUpdateUserPersonalInformationService service, CancellationToken cancellationToken) =>
+        endpoints.MapPut("/users/{userId:int}", async (int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken) =>
         {
             if (request is null)
             {
@@ -30,7 +31,7 @@ public static class UsersEndpoints
             }
 
             var command = new UpdateUserCommand(userId, request.FirstName, request.LastName, request.PhoneNumber, request.Address);
-            var result = await service.UpdateAsync(command, cancellationToken);
+            var result = await sender.Send(command, cancellationToken);
 
             if (result.IsSuccess && result.Response is not null)
             {

@@ -1,20 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Academy.Users.Application.Users;
-using Academy.Users.Domain.Users;
+using MediatR;
 
 namespace Academy.Users.Application.Users.Commands.UpdateUser;
 
-public class UpdateUserPersonalInformationService : IUpdateUserPersonalInformationService
+public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UpdateUserResult>
 {
-    public UpdateUserPersonalInformationService(IUsersRepository usersRepository)
+    public UpdateUserCommandHandler(IUsersRepository usersRepository)
     {
         UsersRepository = usersRepository;
     }
 
     private IUsersRepository UsersRepository { get; }
 
-    public async Task<UpdateUserResult> UpdateAsync(UpdateUserCommand command, CancellationToken cancellationToken)
+    public async Task<UpdateUserResult> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
     {
         var validationErrors = new List<string>();
         var sanitizedFirstName = command.FirstName?.Trim();
