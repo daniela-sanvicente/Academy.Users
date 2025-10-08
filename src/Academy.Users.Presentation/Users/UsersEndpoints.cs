@@ -18,7 +18,7 @@ namespace Academy.Users.Presentation.Users;
                 .WithName("UpdateUserPersonalInformation")
                 .WithTags("Usuarios")
                 .WithSummary("Actualiza los datos personales de un usuario existente.")
-                .WithDescription("Permite modificar nombre, apellido, número telefónico y dirección de un usuario identificado por el parámetro userId.")
+                .WithDescription("Permite modificar nombre, apellido, número telefónico y dirección de un usuario identificado por el parámetro userId. Al menos uno de los campos debe ser proporcionado en el cuerpo.")
                 .Accepts<UpdateUserRequestDto>("application/json")
                 .Produces<UpdateUserSuccessResponseDto>(StatusCodes.Status200OK)
                 .Produces<ValidationErrorResponseDto>(StatusCodes.Status400BadRequest)
@@ -28,7 +28,9 @@ namespace Academy.Users.Presentation.Users;
                 {
                     operation.OperationId = "UpdateUserPersonalInformation";
                     operation.Summary = "Actualiza los datos personales de un usuario.";
-                    operation.Description = "Recibe un cuerpo JSON con los campos firstName, lastName, phoneNumber y address, valida el formato y guarda los cambios en la base de datos.";
+                    operation.Description = "Recibe un cuerpo JSON con los campos firstName, lastName, phoneNumber y address, valida el formato y guarda los cambios en la base de datos. " +
+                                             "Reglas de validación: (1) los campos enviados no pueden ser cadenas vacías, (2) el número telefónico debe ser mexicano (10 dígitos o prefijo +52), " +
+                                             "(3) al menos un campo debe suministrarse, (4) el usuario debe existir.";
                     operation.Responses[StatusCodes.Status200OK.ToString()].Description = "Actualización exitosa.";
                     operation.Responses[StatusCodes.Status400BadRequest.ToString()].Description = "Solicitud inválida o usuario inexistente.";
                     operation.Responses[StatusCodes.Status500InternalServerError.ToString()].Description = "Error interno al persistir los cambios.";
@@ -79,6 +81,34 @@ namespace Academy.Users.Presentation.Users;
                                     ["errors"] = new OpenApiArray
                                     {
                                         new OpenApiString("Phone number is not valid for Mexico.")
+                                    }
+                                }
+                            },
+                            ["EmptyFields"] = new OpenApiExample
+                            {
+                                Summary = "Campos enviados pero vacíos después del trim",
+                                Value = new OpenApiObject
+                                {
+                                    ["status"] = new OpenApiString("InvalidData"),
+                                    ["message"] = new OpenApiString("Invalid user data."),
+                                    ["errors"] = new OpenApiArray
+                                    {
+                                        new OpenApiString("First name cannot be empty."),
+                                        new OpenApiString("Last name cannot be empty."),
+                                        new OpenApiString("Address cannot be empty.")
+                                    }
+                                }
+                            },
+                            ["NoFieldsProvided"] = new OpenApiExample
+                            {
+                                Summary = "No se proporcionó ningún campo para actualizar",
+                                Value = new OpenApiObject
+                                {
+                                    ["status"] = new OpenApiString("InvalidData"),
+                                    ["message"] = new OpenApiString("Invalid user data."),
+                                    ["errors"] = new OpenApiArray
+                                    {
+                                        new OpenApiString("No fields were provided for update.")
                                     }
                                 }
                             },
