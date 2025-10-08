@@ -18,65 +18,7 @@ public static class UsersEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/users/{userId:int}", async (int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken) =>
-        {
-            if (request is null)
-            {
-                var errorPayload = new ErrorResponseDto
-                {
-                    Status = "InvalidData",
-                    Message = "El cuerpo de la solicitud es obligatorio."
-                };
-                return Results.BadRequest(errorPayload);
-            }
-
-            var command = new UpdateUserCommand(userId, request.FirstName, request.LastName, request.PhoneNumber, request.Address);
-            var result = await sender.Send(command, cancellationToken);
-
-            if (result.IsSuccess && result.Response is not null)
-            {
-                var successPayload = new UpdateUserSuccessResponseDto
-                {
-                    UserId = result.Response.UserId,
-                    FirstName = result.Response.FirstName,
-                    LastName = result.Response.LastName,
-                    PhoneNumber = result.Response.PhoneNumber,
-                    Address = result.Response.Address,
-                    Status = result.Response.Status,
-                    Message = result.Response.Message
-                };
-
-                return Results.Ok(successPayload);
-            }
-
-            if (result.ResultType == UpdateUserResultType.ValidationFailure)
-            {
-                var validationPayload = new ValidationErrorResponseDto
-                {
-                    Status = "InvalidData",
-                    Message = result.Message,
-                    Errors = result.Errors
-                };
-                return Results.BadRequest(validationPayload);
-            }
-
-            if (result.ResultType == UpdateUserResultType.UserNotFound)
-            {
-                var userNotFoundPayload = new ErrorResponseDto
-                {
-                    Status = "UserNotFound",
-                    Message = result.Message
-                };
-                return Results.BadRequest(userNotFoundPayload);
-            }
-
-            var failurePayload = new ErrorResponseDto
-            {
-                Status = "ServerError",
-                Message = result.Message
-            };
-            return Results.Json(failurePayload, statusCode: StatusCodes.Status500InternalServerError);
-        })
+        endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
         .WithTags("Usuarios")
         .Accepts<UpdateUserRequestDto>("application/json")
         .Produces<UpdateUserSuccessResponseDto>(StatusCodes.Status200OK)
@@ -102,5 +44,65 @@ public static class UsersEndpoints
         });
 
         return endpoints;
+    }
+
+    internal static async Task<IResult> HandleUpdateUser(int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken)
+    {
+        if (request is null)
+        {
+            var errorPayload = new ErrorResponseDto
+            {
+                Status = "InvalidData",
+                Message = "El cuerpo de la solicitud es obligatorio."
+            };
+            return Results.BadRequest(errorPayload);
+        }
+
+        var command = new UpdateUserCommand(userId, request.FirstName, request.LastName, request.PhoneNumber, request.Address);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsSuccess && result.Response is not null)
+        {
+            var successPayload = new UpdateUserSuccessResponseDto
+            {
+                UserId = result.Response.UserId,
+                FirstName = result.Response.FirstName,
+                LastName = result.Response.LastName,
+                PhoneNumber = result.Response.PhoneNumber,
+                Address = result.Response.Address,
+                Status = result.Response.Status,
+                Message = result.Response.Message
+            };
+
+            return Results.Ok(successPayload);
+        }
+
+        if (result.ResultType == UpdateUserResultType.ValidationFailure)
+        {
+            var validationPayload = new ValidationErrorResponseDto
+            {
+                Status = "InvalidData",
+                Message = result.Message,
+                Errors = result.Errors
+            };
+            return Results.BadRequest(validationPayload);
+        }
+
+        if (result.ResultType == UpdateUserResultType.UserNotFound)
+        {
+            var userNotFoundPayload = new ErrorResponseDto
+            {
+                Status = "UserNotFound",
+                Message = result.Message
+            };
+            return Results.BadRequest(userNotFoundPayload);
+        }
+
+        var failurePayload = new ErrorResponseDto
+        {
+            Status = "ServerError",
+            Message = result.Message
+        };
+        return Results.Json(failurePayload, statusCode: StatusCodes.Status500InternalServerError);
     }
 }
