@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Academy.Users.Application.Users.Commands.UpdateUser;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -5,48 +6,111 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 
 namespace Academy.Users.Presentation.Users;
 
-/// <summary>
-/// Conjunto de endpoints relacionados con la administración de usuarios.
-/// </summary>
-public static class UsersEndpoints
-{
-    /// <summary>
-    /// Permite al cliente actualizar parcial o totalmente sus datos personales mediante el recurso PUT /users/{userId}.
-    /// </summary>
-    public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
+    public static class UsersEndpoints
     {
-        endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
-        .WithTags("Usuarios")
-        .Accepts<UpdateUserRequestDto>("application/json")
-        .Produces<UpdateUserSuccessResponseDto>(StatusCodes.Status200OK)
-        .Produces<ValidationErrorResponseDto>(StatusCodes.Status400BadRequest)
-        .Produces<ErrorResponseDto>(StatusCodes.Status400BadRequest)
-        .Produces<ErrorResponseDto>(StatusCodes.Status500InternalServerError)
-        .WithSummary("Actualiza los datos personales de un usuario existente.")
-        .WithDescription("Permite modificar nombre, apellido, número telefónico y dirección de un usuario identificado por el parámetro userId.")
-        .WithOpenApi(operation =>
+        public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            operation.Summary = "Actualiza los datos personales de un usuario.";
-            operation.Description = "Recibe un cuerpo JSON con los campos firstName, lastName, phoneNumber y address, valida el formato y guarda los cambios en la base de datos. Responde con el estado actualizado o con mensajes de error en caso de datos inválidos o fallos internos.";
-            operation.Responses[StatusCodes.Status200OK.ToString()].Description = "Actualización exitosa.";
-            operation.Responses[StatusCodes.Status400BadRequest.ToString()].Description = "Solicitud inválida o usuario inexistente.";
-            operation.Responses[StatusCodes.Status500InternalServerError.ToString()].Description = "Error interno al persistir los cambios.";
+            endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
+                .WithName("UpdateUserPersonalInformation")
+                .WithTags("Usuarios")
+                .WithSummary("Actualiza los datos personales de un usuario existente.")
+                .WithDescription("Permite modificar nombre, apellido, número telefónico y dirección de un usuario identificado por el parámetro userId.")
+                .Accepts<UpdateUserRequestDto>("application/json")
+                .Produces<UpdateUserSuccessResponseDto>(StatusCodes.Status200OK)
+                .Produces<ValidationErrorResponseDto>(StatusCodes.Status400BadRequest)
+                .Produces<ErrorResponseDto>(StatusCodes.Status400BadRequest)
+                .Produces<ErrorResponseDto>(StatusCodes.Status500InternalServerError)
+                .WithOpenApi(operation =>
+                {
+                    operation.OperationId = "UpdateUserPersonalInformation";
+                    operation.Summary = "Actualiza los datos personales de un usuario.";
+                    operation.Description = "Recibe un cuerpo JSON con los campos firstName, lastName, phoneNumber y address, valida el formato y guarda los cambios en la base de datos.";
+                    operation.Responses[StatusCodes.Status200OK.ToString()].Description = "Actualización exitosa.";
+                    operation.Responses[StatusCodes.Status400BadRequest.ToString()].Description = "Solicitud inválida o usuario inexistente.";
+                    operation.Responses[StatusCodes.Status500InternalServerError.ToString()].Description = "Error interno al persistir los cambios.";
 
-            if (operation.RequestBody?.Content.TryGetValue("application/json", out var requestContent) == true)
-            {
-                requestContent.Example = new OpenApiString("{\n  \"firstName\": \"Ana María\",\n  \"lastName\": \"López Hernández\",\n  \"phoneNumber\": \"+525511122233\",\n  \"address\": \"Av. Reforma 500, Piso 12, Ciudad de México\"\n}");
-            }
+                    if (operation.RequestBody is not null)
+                    {
+                        operation.RequestBody.Description = "Campos opcionales que permiten actualizar uno o varios datos personales del usuario.";
+                    }
 
-            return operation;
-        });
+                    if (operation.RequestBody?.Content.TryGetValue("application/json", out var requestContent) == true)
+                    {
+                        requestContent.Example = new OpenApiObject
+                        {
+                            ["firstName"] = new OpenApiString("Ana María"),
+                            ["lastName"] = new OpenApiString("López Hernández"),
+                            ["phoneNumber"] = new OpenApiString("+525511122233"),
+                            ["address"] = new OpenApiString("Av. Reforma 500, Piso 12, Ciudad de México")
+                        };
+                    }
 
-        return endpoints;
-    }
+                    if (operation.Responses.TryGetValue(StatusCodes.Status200OK.ToString(), out var successResponse) &&
+                        successResponse.Content.TryGetValue("application/json", out var successMediaType))
+                    {
+                        successMediaType.Example = new OpenApiObject
+                        {
+                            ["userId"] = new OpenApiInteger(1),
+                            ["firstName"] = new OpenApiString("Ana María"),
+                            ["lastName"] = new OpenApiString("López Hernández"),
+                            ["phoneNumber"] = new OpenApiString("+525511122233"),
+                            ["address"] = new OpenApiString("Av. Reforma 500, Piso 12, Ciudad de México"),
+                            ["status"] = new OpenApiString("ACTIVE"),
+                            ["message"] = new OpenApiString("User information updated successfully.")
+                        };
+                    }
 
-    internal static async Task<IResult> HandleUpdateUser(int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken)
+                    if (operation.Responses.TryGetValue(StatusCodes.Status400BadRequest.ToString(), out var badRequestResponse) &&
+                        badRequestResponse.Content.TryGetValue("application/json", out var badRequestMediaType))
+                    {
+                        badRequestMediaType.Examples = new Dictionary<string, OpenApiExample>
+                        {
+                            ["ValidationError"] = new OpenApiExample
+                            {
+                                Summary = "Errores de validación en los datos enviados",
+                                Value = new OpenApiObject
+                                {
+                                    ["status"] = new OpenApiString("InvalidData"),
+                                    ["message"] = new OpenApiString("Invalid user data."),
+                                    ["errors"] = new OpenApiArray
+                                    {
+                                        new OpenApiString("Phone number is not valid for Mexico.")
+                                    }
+                                }
+                            },
+                            ["UserNotFound"] = new OpenApiExample
+                            {
+                                Summary = "Usuario inexistente para el userId solicitado",
+                                Value = new OpenApiObject
+                                {
+                                    ["status"] = new OpenApiString("UserNotFound"),
+                                    ["message"] = new OpenApiString("User not found.")
+                                }
+                            }
+                        };
+                    }
+
+                    if (operation.Responses.TryGetValue(StatusCodes.Status500InternalServerError.ToString(), out var serverErrorResponse) &&
+                        serverErrorResponse.Content.TryGetValue("application/json", out var serverErrorMediaType))
+                    {
+                        serverErrorMediaType.Example = new OpenApiObject
+                        {
+                            ["status"] = new OpenApiString("ServerError"),
+                            ["message"] = new OpenApiString("Could not update user information.")
+                        };
+                    }
+
+                    return operation;
+                });
+
+            return endpoints;
+        }
+
+        internal static async Task<IResult> HandleUpdateUser(int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken)
     {
         if (request is null)
         {
