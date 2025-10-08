@@ -112,7 +112,8 @@ public class UsersEndpointsTests
         var app = builder.Build();
         var group = app.MapGroup("/api/v1");
         group.MapUsersEndpoints();
-        var endpoint = app.DataSources
+        var endpointBuilder = (IEndpointRouteBuilder)app;
+        var endpoint = endpointBuilder.DataSources
             .SelectMany(x => x.Endpoints)
             .OfType<RouteEndpoint>()
             .Single(x => x.RoutePattern.RawText == "/api/v1/users/{userId:int}" && x.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("PUT") == true);

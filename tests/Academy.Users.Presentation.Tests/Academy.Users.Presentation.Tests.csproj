@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\Academy.Users.Presentation\Academy.Users.Presentation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
