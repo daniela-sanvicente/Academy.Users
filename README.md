@@ -29,7 +29,7 @@ Academy.Users is a .NET 8 solution structured with Clean Architecture to manage 
 2. Configure the connection string via user secrets (adjust the path if needed)
    ```bash
    dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\\Users\\DSANVICE\\OneDrive - Capgemini\\Documents\\academia_kof_sqlite"
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
    ```
 3. Seed sample data for manual testing by executing the SQL below against the SQLite database
    ```sql
@@ -175,7 +175,7 @@ Academy.Users es una solución .NET 8 basada en la Arquitectura Limpia que permi
 2. Configurar la cadena de conexión con secretos de usuario (ajusta la ruta si es necesario)
    ```bash
    dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\\Users\\DSANVICE\\OneDrive - Capgemini\\Documents\\academia_kof_sqlite"
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
    ```
 3. Ejecutar el siguiente SQL en la base de datos para contar con usuarios de prueba
    ```sql
