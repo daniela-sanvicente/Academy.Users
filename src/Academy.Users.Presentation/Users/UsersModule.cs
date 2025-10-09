@@ -10,7 +10,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Academy.Users.Presentation.Users;
 
-    public static class UsersEndpoints
+public static class UsersModule
     {
     public static IEndpointRouteBuilder MapUsersModule(this IEndpointRouteBuilder endpoints)
         {

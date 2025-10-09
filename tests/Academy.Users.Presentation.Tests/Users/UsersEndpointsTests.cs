@@ -11,14 +11,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Academy.Users.Presentation.Tests.Users;
 
-public class UsersEndpointsTests
+public class UsersModuleTests
 {
     [Fact]
     public async Task HandleUpdateUser_WhenRequestIsNull_ReturnsBadRequest()
     {
         var sender = new FakeSender();
 
-        var result = await UsersEndpoints.HandleUpdateUser(1, null!, sender, CancellationToken.None);
+        var result = await UsersModule.HandleUpdateUser(1, null!, sender, CancellationToken.None);
         var httpResult = await ExecuteResultAsync(result);
 
         Assert.Equal(StatusCodes.Status400BadRequest, httpResult.StatusCode);
@@ -33,7 +33,7 @@ public class UsersEndpointsTests
         var sender = new FakeSender { ResultToReturn = validationResult };
         var request = new UpdateUserRequestDto { PhoneNumber = "123" };
 
-        var result = await UsersEndpoints.HandleUpdateUser(2, request, sender, CancellationToken.None);
+        var result = await UsersModule.HandleUpdateUser(2, request, sender, CancellationToken.None);
         var httpResult = await ExecuteResultAsync(result);
 
         Assert.Equal(StatusCodes.Status400BadRequest, httpResult.StatusCode);
@@ -47,7 +47,7 @@ public class UsersEndpointsTests
         var sender = new FakeSender { ResultToReturn = UpdateUserResult.UserNotFound("User not found.") };
         var request = new UpdateUserRequestDto { FirstName = "Ana" };
 
-        var result = await UsersEndpoints.HandleUpdateUser(9, request, sender, CancellationToken.None);
+        var result = await UsersModule.HandleUpdateUser(9, request, sender, CancellationToken.None);
         var httpResult = await ExecuteResultAsync(result);
 
         Assert.Equal(StatusCodes.Status400BadRequest, httpResult.StatusCode);
@@ -62,7 +62,7 @@ public class UsersEndpointsTests
         var sender = new FakeSender { ResultToReturn = UpdateUserResult.Success(response, "ok") };
         var request = new UpdateUserRequestDto { FirstName = "Ana" };
 
-        var result = await UsersEndpoints.HandleUpdateUser(1, request, sender, CancellationToken.None);
+        var result = await UsersModule.HandleUpdateUser(1, request, sender, CancellationToken.None);
         var httpResult = await ExecuteResultAsync(result);
 
         Assert.Equal(StatusCodes.Status200OK, httpResult.StatusCode);
@@ -76,7 +76,7 @@ public class UsersEndpointsTests
         var sender = new FakeSender { ResultToReturn = UpdateUserResult.PersistenceFailure("fail") };
         var request = new UpdateUserRequestDto { FirstName = "Ana" };
 
-        var result = await UsersEndpoints.HandleUpdateUser(3, request, sender, CancellationToken.None);
+        var result = await UsersModule.HandleUpdateUser(3, request, sender, CancellationToken.None);
         var httpResult = await ExecuteResultAsync(result);
 
         Assert.Equal(StatusCodes.Status500InternalServerError, httpResult.StatusCode);
