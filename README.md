@@ -1,271 +1,93 @@
 # Academy.Users
 
+- [Español](#español)
 - [English](#english)
-- [Español](#espa%c3%b1ol)
-
-## English
-
-### Overview
-Academy.Users is a .NET 8 solution structured with Clean Architecture to manage user data for an e-commerce context. It exposes a minimal API for updating user profile information while separating responsibilities across Domain, Application, Infrastructure, and Presentation layers.
-
-### Solution Layout
-- `src/Academy.Users.Domain` contains core entities (`User`) that map directly to the SQLite schema.
-- `src/Academy.Users.Application` holds use cases and business rules such as `UpdateUserPersonalInformationService`.
-- `src/Academy.Users.Infrastructure` wires Entity Framework Core to SQLite and implements repositories.
-- `src/Academy.Users.Presentation` defines HTTP contracts and minimal APIs.
-- `src/Academy.Users.API` is the composition root that hosts the web app.
-- `tests/*` contain xUnit projects (currently scaffolds) for each layer.
-
-### Prerequisites
-- .NET SDK 8.0+
-- SQLite 3.x
-- Access to the database file located at `C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite` (or adjust the connection string).
-
-### Initial Setup
-1. Restore dependencies
-   ```bash
-   dotnet restore
-   ```
-2. Configure the database provider and connection via user secrets
-   ```bash
-   dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
-   ```
-   See [Database Providers](#database-providers) for alternate connections (SQL Server / SQL Server Express).
-3. Seed sample data for manual testing by executing the SQL below against the SQLite database
-   ```sql
-   PRAGMA foreign_keys = ON;
-
-   DELETE FROM Users WHERE Email IN ('ana.lopez@example.com', 'carlos.mendez@example.com');
-
-   INSERT INTO Users (
-     FirstName,
-     LastName,
-     Email,
-     PhoneNumber,
-     Address,
-    Password,
-     Status
-   )
-   VALUES
-   (
-     'Ana',
-     'López',
-     'ana.lopez@example.com',
-     '5511122233',
-     'Av. Reforma 123, Ciudad de México',
-     'HASH-ANA-001',
-     'ACTIVE'
-   ),
-   (
-     'Carlos',
-     'Méndez',
-     'carlos.mendez@example.com',
-     '5522233344',
-     'Calle Hidalgo 456, Ciudad de México',
-     'HASH-CARLOS-001',
-     'ACTIVE'
-   );
-   ```
-
-### Build and Run
-```bash
-# Build
-dotnet build
-
-# Run the API (listens on https://localhost:5120 by default)
-dotnet run --project src/Academy.Users.API/Academy.Users.API.csproj
-```
-
-### API Endpoint
-| Method | Route                   | Description                                      |
-|--------|------------------------|--------------------------------------------------|
-| PUT    | `/api/v1/users/{userId}` | Update personal data for the specified user |
-
-#### Request Body Example
-```json
-{
-  "firstName": "Ana María",
-  "lastName": "López Hernández",
-  "phoneNumber": "+525511122233",
-  "address": "Av. Reforma 500, Piso 12, Ciudad de México"
-}
-```
-
-#### Possible Responses
-- `200 OK`
-  ```json
-  {
-    "userId": 1,
-    "firstName": "Ana María",
-    "lastName": "López Hernández",
-    "phoneNumber": "+525511122233",
-    "address": "Av. Reforma 500, Piso 12, Ciudad de México",
-    "status": "ACTIVE",
-    "message": "User information updated successfully."
-  }
-  ```
-- `400 Bad Request` (validation)
-  ```json
-  {
-    "status": "InvalidData",
-    "message": "Invalid user data.",
-    "errors": [
-      "Phone number is not valid for Mexico."
-    ]
-  }
-  ```
-- `400 Bad Request` (user not found)
-  ```json
-  {
-    "status": "UserNotFound",
-    "message": "User not found."
-  }
-  ```
-- `500 Internal Server Error`
-  ```json
-  {
-    "status": "ServerError",
-    "message": "Could not update user information."
-  }
-  ```
-
-### Testing the Endpoint
-Using Postman or curl:
-```bash
-curl -X PUT https://localhost:5120/api/v1/users/1 \
-     -H "Content-Type: application/json" \
-     -d '{
-           "firstName": "Ana María",
-           "lastName": "López Hernández",
-           "phoneNumber": "+525511122233",
-           "address": "Av. Reforma 500, Piso 12, Ciudad de México"
-         }'
-```
-
-### Project Scripts
-- `dotnet build` to compile
-- `dotnet test` to run every test project (currently placeholders)
-- `dotnet watch run --project src/Academy.Users.API/Academy.Users.API.csproj` for hot reload during development
-
-### Database Providers
-The application reads two user-secret keys when configuring Entity Framework Core:
-
-1. `DatabaseOptions:Provider` – accepts `sqlite`, `sqlserver`, or `sqlserverexpress`.
-2. `ConnectionStrings:DefaultConnection` – the connection string for the selected provider.
-
-Follow these steps whenever you need to change databases:
-1. Set the provider value.
-2. Set the matching connection string.
-3. Restart the API for the changes to take effect.
-
-**SQLite (default local file)**
-```bash
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
-```
-Points to the SQLite database stored in OneDrive. No additional database engine is required.
-
-**Microsoft SQL Server (full edition / Azure SQL)**
-```bash
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=AcademyUsers;User Id=USER;Password=PWD;Trusted_Connection=False;MultipleActiveResultSets=True;"
-```
-Replace `YOUR_SERVER`, `USER`, and `PWD` with the credentials for your SQL Server instance.
-
-**Microsoft SQL Server Express (named instance example)**
-```bash
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserverexpress"
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=YOUR_MACHINE\SQLEXPRESS;Database=YourDB;Trusted_Connection=True;TrustServerCertificate=True;"
-```
-Replace `YOUR_MACHINE\SQLEXPRESS` with your SQL Server Express instance. This example assumes a local Express instance hosting the `YourDB` database with Windows authentication.
-
-Whenever you want to swap providers, rerun the relevant commands and restart the API.
-
----
 
 ## Español
 
-### Descripción General
-Academy.Users es una solución .NET 8 basada en la Arquitectura Limpia que permite administrar la información de usuarios para un contexto de comercio electrónico. Expone una API mínima para actualizar los datos personales de un usuario y divide la lógica en capas bien definidas.
+### Descripción general
+Academy.Users es una solución .NET 8 basada en Clean Architecture para administrar datos personales de usuarios dentro de un escenario de comercio electrónico. El proyecto está dividido en capas (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`) y cuenta con proyectos de pruebas por capa en `tests/*`.
 
-### Estructura de la Solución
-- `src/Academy.Users.Domain` contiene las entidades centrales (`User`) alineadas con el esquema SQLite.
-- `src/Academy.Users.Application` aloja casos de uso y reglas de negocio como `UpdateUserPersonalInformationService`.
-- `src/Academy.Users.Infrastructure` integra Entity Framework Core con SQLite y provee repositorios.
-- `src/Academy.Users.Presentation` define los contratos HTTP y los endpoints mínimos.
-- `src/Academy.Users.API` actúa como punto de composición para hospedar la aplicación web.
-- `tests/*` incluye proyectos xUnit (plantillas) para cada capa.
+### Diseño de la solución
+- `src/Academy.Users.Domain`: entidades núcleo (`User`).
+- `src/Academy.Users.Application`: casos de uso/CQRS (por ejemplo `UpdateUserCommandHandler`).
+- `src/Academy.Users.Infrastructure`: configuración de EF Core y repositorios (SQLite/SQL Server).
+- `src/Academy.Users.Presentation`: endpoints/DTOs minimal API.
+- `src/Academy.Users.API`: host y composición general.
+- `tests/*`: proyectos xUnit (unitarios por capa).
 
-### Requisitos Previos
+### Requisitos previos
 - .NET SDK 8.0+
-- SQLite 3.x
-- Acceso al archivo de base de datos `C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite` (ajusta la cadena si cambia).
+- Acceso a SQL Server (principal) o a un archivo SQLite si usas la opción alternativa.
 
-### Configuración Inicial
+### Configuración inicial
 1. Restaurar dependencias
    ```bash
    dotnet restore
    ```
-2. Configurar el proveedor y la cadena con secretos de usuario
+2. Configurar el proveedor y cadena de conexión mediante user-secrets. La configuración principal apunta a SQL Server hospedado en `sql.bsite.net`:
    ```bash
    dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
-   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=sql.bsite.net\MSSQL2016;Database=academynet_AcademyDB;User Id=academynet_AcademyDB;TrustServerCertificate=True"
    ```
-   Revisa [Proveedores de Base de Datos](#proveedores-de-base-de-datos) para otras opciones (SQL Server / SQL Server Express).
-3. Ejecutar el siguiente SQL en la base de datos para contar con usuarios de prueba
+   - Después de `User Id=academynet_AcademyDB;` agrega manualmente la propriedad `Password=`, con la contraseña del servidor, antes de ejecutar el comando.
+   
+3. Preparar la base de datos ejecutando el siguiente script SQL Server:
    ```sql
-   PRAGMA foreign_keys = ON;
+   DELETE FROM dbo.Users WHERE Email IN ('ana.lopez@example.com', 'carlos.mendez@example.com');
+   GO
 
-   DELETE FROM Users WHERE Email IN ('ana.lopez@example.com', 'carlos.mendez@example.com');
-
-   INSERT INTO Users (
-     FirstName,
-     LastName,
-     Email,
-     PhoneNumber,
-     Address,
-    Password,
-     Status
+   INSERT INTO dbo.Users
+   (
+       FirstName,
+       LastName,
+       Email,
+       PhoneNumber,
+       Address,
+       Password,
+       Status,
+       CreatedAt,
+       UpdatedAt
    )
    VALUES
    (
-     'Ana',
-     'López',
-     'ana.lopez@example.com',
-     '5511122233',
-     'Av. Reforma 123, Ciudad de México',
-     'HASH-ANA-001',
-     'ACTIVE'
+       'Ana',
+       'López',
+       'ana.lopez@example.com',
+       '5511122233',
+       'Av. Reforma 123, Ciudad de México',
+       'HASH-ANA-001',
+       'ACTIVE',
+       SYSUTCDATETIME(),
+       SYSUTCDATETIME()
    ),
    (
-     'Carlos',
-     'Méndez',
-     'carlos.mendez@example.com',
-     '5522233344',
-     'Calle Hidalgo 456, Ciudad de México',
-     'HASH-CARLOS-001',
-     'ACTIVE'
+       'Carlos',
+       'Méndez',
+       'carlos.mendez@example.com',
+       '5522233344',
+       'Calle Hidalgo 456, Ciudad de México',
+       'HASH-CARLOS-001',
+       'ACTIVE',
+       SYSUTCDATETIME(),
+       SYSUTCDATETIME()
    );
+   GO
    ```
 
-### Compilar y Ejecutar
+### Compilar y ejecutar
 ```bash
-# Compilar
- dotnet build
-
-# Ejecutar la API (escucha en https://localhost:5120 por defecto)
- dotnet run --project src/Academy.Users.API/Academy.Users.API.csproj
+dotnet build
+dotnet run --project src/Academy.Users.API/Academy.Users.API.csproj
 ```
 
-### Endpoint Disponibles
-| Método | Ruta                      | Descripción                                                  |
-|--------|--------------------------|--------------------------------------------------------------|
+### Endpoint expuesto
+| Método | Ruta                    | Descripción                                              |
+|--------|-------------------------|----------------------------------------------------------|
 | PUT    | `/api/v1/users/{userId}` | Actualiza los datos personales del usuario indicado |
 
-#### Ejemplo de Body
+#### Ejemplo de petición
 ```json
 {
   "firstName": "Ana María",
@@ -275,91 +97,107 @@ Academy.Users es una solución .NET 8 basada en la Arquitectura Limpia que permi
 }
 ```
 
-#### Respuestas Posibles
-- `200 OK`
-  ```json
-  {
-    "userId": 1,
-    "firstName": "Ana María",
-    "lastName": "López Hernández",
-    "phoneNumber": "+525511122233",
-    "address": "Av. Reforma 500, Piso 12, Ciudad de México",
-    "status": "ACTIVE",
-    "message": "User information updated successfully."
-  }
-  ```
-- `400 Bad Request` (validación)
-  ```json
-  {
-    "status": "InvalidData",
-    "message": "Invalid user data.",
-    "errors": [
-      "Phone number is not valid for Mexico."
-    ]
-  }
-  ```
-- `400 Bad Request` (usuario no encontrado)
-  ```json
-  {
-    "status": "UserNotFound",
-    "message": "User not found."
-  }
-  ```
-- `500 Internal Server Error`
-  ```json
-  {
-    "status": "ServerError",
-    "message": "Could not update user information."
-  }
-  ```
+### Proveedores de base de datos
+La aplicación lee dos claves de configuración:
+1. `DatabaseOptions:Provider` – `sqlserver` (por defecto), `sqlite` o `sqlserverexpress`.
+2. `ConnectionStrings:DefaultConnection` – cadena correspondiente al proveedor.
 
-### Pruebas con Postman o curl
+#### Principal: SQL Server hospedado en sql.bsite.net
 ```bash
-curl -X PUT https://localhost:5120/api/v1/users/1 \
-     -H "Content-Type: application/json" \
-     -d '{
-           "firstName": "Ana María",
-           "lastName": "López Hernández",
-           "phoneNumber": "+525511122233",
-           "address": "Av. Reforma 500, Piso 12, Ciudad de México"
-         }'
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=sql.bsite.net\MSSQL2016;Database=academynet_AcademyDB;User Id=academynet_AcademyDB;TrustServerCertificate=True"
 ```
+- Después de `User Id=academynet_AcademyDB;` agrega manualmente la propriedad `Password=`, con la contraseña del servidor, antes de ejecutar el comando.
 
-### Comandos Útiles
-- `dotnet build` para compilar
-- `dotnet test` para ejecutar los proyectos de prueba (por ahora contienen plantillas)
-- `dotnet watch run --project src/Academy.Users.API/Academy.Users.API.csproj` para recarga en caliente durante el desarrollo
-
-### Proveedores de Base de Datos
-La aplicación lee dos claves cuando configura Entity Framework Core:
-
-1. `DatabaseOptions:Provider` – admite `sqlite`, `sqlserver` o `sqlserverexpress`.
-2. `ConnectionStrings:DefaultConnection` – la cadena de conexión para dicho proveedor.
-
-Para cambiar de base de datos:
-1. Establece el proveedor.
-2. Establece la cadena compatible.
-3. Reinicia la API para aplicar los cambios.
-
-**SQLite (archivo local predeterminado)**
+#### Alternativa: SQLite local
 ```bash
 dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
 dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
 ```
-Apunta al archivo SQLite almacenado en OneDrive, ideal para pruebas locales.
 
-**Microsoft SQL Server (edición completa / Azure SQL)**
-```bash
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=TU_SERVIDOR;Database=AcademyUsers;User Id=USUARIO;Password=CLAVE;Trusted_Connection=False;MultipleActiveResultSets=True;"
-```
-Sustituye `TU_SERVIDOR`, `USUARIO` y `CLAVE` con los datos de tu instancia SQL Server.
-
-**Microsoft SQL Server Express (instancia nombrada)**
+#### Alternativa: SQL Server Express (instancia nombrada)
 ```bash
 dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserverexpress"
-dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=TU_EQUIPO\SQLEXPRESS;Database=TuDB;Trusted_Connection=True;TrustServerCertificate=True;"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=TU_EQUIPO\SQLEXPRESS;Database=CartDB;Trusted_Connection=True;TrustServerCertificate=True;"
 ```
-Ejemplo que apunta a una instancia SQL Server Express local con la base `TuDB` y autenticación integrada. Ajusta nombres conforme a tu entorno.
+Reinicia la API cada vez que cambies de proveedor.
 
-Cuando quieras alternar el origen de datos, vuelve a ejecutar los comandos correspondientes y reinicia la API.
+---
+
+## English
+
+### Overview
+Academy.Users is a .NET 8 solution structured with Clean Architecture to manage user personal data. It relies on modular layers (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`) plus per-layer xUnit test projects under `tests/*`.
+
+### Solution layout
+- `src/Academy.Users.Domain`: core entities (`User`).
+- `src/Academy.Users.Application`: CQRS handlers (e.g., `UpdateUserCommandHandler`).
+- `src/Academy.Users.Infrastructure`: EF Core configuration/repositories for SQLite or SQL Server.
+- `src/Academy.Users.Presentation`: minimal API endpoints and DTOs.
+- `src/Academy.Users.API`: host/composition root.
+- `tests/*`: xUnit projects.
+
+### Prerequisites
+- .NET SDK 8.0+
+- Access to SQL Server (primary option) or a local SQLite file for the alternate provider.
+
+### Initial setup
+1. Restore dependencies
+   ```bash
+   dotnet restore
+   ```
+2. Configure provider and connection via user secrets. Primary option targets SQL Server at `sql.bsite.net`:
+   ```bash
+   dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=sql.bsite.net\MSSQL2016;Database=academynet_AcademyDB;User Id=academynet_AcademyDB;TrustServerCertificate=True"
+   ```
+   - Add the `Password=` property, with the server's password, immediately after `User Id=academynet_AcademyDB;` when you run the command locally.
+
+3. Optional: run the SQL Server script above to recreate the `Users` table and seed sample data if needed.
+
+### Build and run
+```bash
+dotnet build
+dotnet run --project src/Academy.Users.API/Academy.Users.API.csproj
+```
+
+### API endpoint
+| Method | Route                    | Description                                   |
+|--------|-------------------------|-----------------------------------------------|
+| PUT    | `/api/v1/users/{userId}` | Updates personal information for that user |
+
+#### Sample request
+```json
+{
+  "firstName": "Ana María",
+  "lastName": "López Hernández",
+  "phoneNumber": "+525511122233",
+  "address": "Av. Reforma 500, Piso 12, Ciudad de México"
+}
+```
+
+### Database providers
+The app reads:
+1. `DatabaseOptions:Provider` – defaults to `sqlserver`; alternatives `sqlite`, `sqlserverexpress`.
+2. `ConnectionStrings:DefaultConnection` – provider-specific connection string.
+
+#### Primary (SQL Server hosted at sql.bsite.net)
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=sql.bsite.net\MSSQL2016;Database=academynet_AcademyDB;User Id=academynet_AcademyDB;TrustServerCertificate=True"
+```
+- Add the `Password=` property, with the server's password, immediately after `User Id=academynet_AcademyDB;` when you run the command locally.
+
+#### Alternate: local SQLite
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
+```
+
+#### Alternate: SQL Server Express (named instance)
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserverexpress"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=YOUR_MACHINE\SQLEXPRESS;Database=CartDB;Trusted_Connection=True;TrustServerCertificate=True;"
+```
+Restart the API after changing secrets to load the new provider/connection.
