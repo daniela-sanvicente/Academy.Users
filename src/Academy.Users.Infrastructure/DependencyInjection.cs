@@ -11,11 +11,33 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var provider = configuration["DatabaseOptions:Provider"]?.Trim();
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        var hasConnectionString = string.IsNullOrWhiteSpace(connectionString) == false;
-        var resolvedConnectionString = hasConnectionString ? connectionString! : "Data Source=academy_users_local.db";
-        services.AddDbContext<AcademyUsersDbContext>(options => options.UseSqlite(resolvedConnectionString));
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("ConnectionStrings:DefaultConnection must be configured.");
+        }
+
+        services.AddDbContext<AcademyUsersDbContext>(options => ConfigureProvider(options, provider, connectionString));
         services.AddScoped<IUsersRepository, UsersRepository>();
         return services;
+    }
+
+    private static void ConfigureProvider(DbContextOptionsBuilder options, string? provider, string connectionString)
+    {
+        switch (provider?.ToLowerInvariant())
+        {
+            case "sqlserver":
+                options.UseSqlServer(connectionString);
+                break;
+            case "sqlserverexpress":
+                options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure());
+                break;
+            case "sqlite":
+            default:
+                options.UseSqlite(connectionString);
+                break;
+        }
     }
 }

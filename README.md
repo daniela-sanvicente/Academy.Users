@@ -26,11 +26,13 @@ Academy.Users is a .NET 8 solution structured with Clean Architecture to manage 
    ```bash
    dotnet restore
    ```
-2. Configure the connection string via user secrets (adjust the path if needed)
+2. Configure the database provider and connection via user secrets
    ```bash
    dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
    dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
    ```
+   See [Database Providers](#database-providers) for alternate connections (SQL Server / SQL Server Express).
 3. Seed sample data for manual testing by executing the SQL below against the SQLite database
    ```sql
    PRAGMA foreign_keys = ON;
@@ -147,6 +149,40 @@ curl -X PUT https://localhost:5120/api/v1/users/1 \
 - `dotnet test` to run every test project (currently placeholders)
 - `dotnet watch run --project src/Academy.Users.API/Academy.Users.API.csproj` for hot reload during development
 
+### Database Providers
+The application reads two user-secret keys when configuring Entity Framework Core:
+
+1. `DatabaseOptions:Provider` – accepts `sqlite`, `sqlserver`, or `sqlserverexpress`.
+2. `ConnectionStrings:DefaultConnection` – the connection string for the selected provider.
+
+Follow these steps whenever you need to change databases:
+1. Set the provider value.
+2. Set the matching connection string.
+3. Restart the API for the changes to take effect.
+
+**SQLite (default local file)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
+```
+Points to the SQLite database stored in OneDrive. No additional database engine is required.
+
+**Microsoft SQL Server (full edition / Azure SQL)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=AcademyUsers;User Id=USER;Password=PWD;Trusted_Connection=False;MultipleActiveResultSets=True;"
+```
+Replace `YOUR_SERVER`, `USER`, and `PWD` with the credentials for your SQL Server instance.
+
+**Microsoft SQL Server Express (named instance example)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserverexpress"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=YOUR_MACHINE\SQLEXPRESS;Database=YourDB;Trusted_Connection=True;TrustServerCertificate=True;"
+```
+Replace `YOUR_MACHINE\SQLEXPRESS` with your SQL Server Express instance. This example assumes a local Express instance hosting the `YourDB` database with Windows authentication.
+
+Whenever you want to swap providers, rerun the relevant commands and restart the API.
+
 ---
 
 ## Español
@@ -172,11 +208,13 @@ Academy.Users es una solución .NET 8 basada en la Arquitectura Limpia que permi
    ```bash
    dotnet restore
    ```
-2. Configurar la cadena de conexión con secretos de usuario (ajusta la ruta si es necesario)
+2. Configurar el proveedor y la cadena con secretos de usuario
    ```bash
    dotnet user-secrets init --project src/Academy.Users.API/Academy.Users.API.csproj
+   dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
    dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
    ```
+   Revisa [Proveedores de Base de Datos](#proveedores-de-base-de-datos) para otras opciones (SQL Server / SQL Server Express).
 3. Ejecutar el siguiente SQL en la base de datos para contar con usuarios de prueba
    ```sql
    PRAGMA foreign_keys = ON;
@@ -291,3 +329,37 @@ curl -X PUT https://localhost:5120/api/v1/users/1 \
 - `dotnet build` para compilar
 - `dotnet test` para ejecutar los proyectos de prueba (por ahora contienen plantillas)
 - `dotnet watch run --project src/Academy.Users.API/Academy.Users.API.csproj` para recarga en caliente durante el desarrollo
+
+### Proveedores de Base de Datos
+La aplicación lee dos claves cuando configura Entity Framework Core:
+
+1. `DatabaseOptions:Provider` – admite `sqlite`, `sqlserver` o `sqlserverexpress`.
+2. `ConnectionStrings:DefaultConnection` – la cadena de conexión para dicho proveedor.
+
+Para cambiar de base de datos:
+1. Establece el proveedor.
+2. Establece la cadena compatible.
+3. Reinicia la API para aplicar los cambios.
+
+**SQLite (archivo local predeterminado)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlite"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Data Source=C:\Users\DSANVICE\OneDrive - Capgemini\Documents\academia_kof_sqlite"
+```
+Apunta al archivo SQLite almacenado en OneDrive, ideal para pruebas locales.
+
+**Microsoft SQL Server (edición completa / Azure SQL)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserver"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=TU_SERVIDOR;Database=AcademyUsers;User Id=USUARIO;Password=CLAVE;Trusted_Connection=False;MultipleActiveResultSets=True;"
+```
+Sustituye `TU_SERVIDOR`, `USUARIO` y `CLAVE` con los datos de tu instancia SQL Server.
+
+**Microsoft SQL Server Express (instancia nombrada)**
+```bash
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "DatabaseOptions:Provider" "sqlserverexpress"
+dotnet user-secrets set --project src/Academy.Users.API/Academy.Users.API.csproj "ConnectionStrings:DefaultConnection" "Server=TU_EQUIPO\SQLEXPRESS;Database=TuDB;Trusted_Connection=True;TrustServerCertificate=True;"
+```
+Ejemplo que apunta a una instancia SQL Server Express local con la base `TuDB` y autenticación integrada. Ajusta nombres conforme a tu entorno.
+
+Cuando quieras alternar el origen de datos, vuelve a ejecutar los comandos correspondientes y reinicia la API.
