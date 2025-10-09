@@ -20,7 +20,7 @@
 ## Español
 
 ### Descripción general
-Academy.Users es una solución .NET 8 basada en Clean Architecture para administrar datos personales de usuarios dentro de un escenario de comercio electrónico. El proyecto está dividido en capas (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`) y cuenta con proyectos de pruebas por capa en `tests/*`.
+Academy.Users es una solución .NET 8 basada en Clean Architecture para administrar datos personales de usuarios dentro de un escenario de comercio electrónico. El proyecto está dividido en capas (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`).
 
 ### Diseño de la solución
 - `src/Academy.Users.Domain`: entidades núcleo (`User`).
@@ -28,7 +28,6 @@ Academy.Users es una solución .NET 8 basada en Clean Architecture para adminis
 - `src/Academy.Users.Infrastructure`: configuración de EF Core y repositorios (SQLite/SQL Server).
 - `src/Academy.Users.Presentation`: endpoints/DTOs minimal API.
 - `src/Academy.Users.API`: host y composición general.
-- `tests/*`: proyectos xUnit (unitarios por capa).
 
 ### Requisitos previos
 - .NET SDK 8.0+
@@ -141,7 +140,7 @@ Reinicia la API cada vez que cambies de proveedor.
 ## English
 
 ### Overview
-Academy.Users is a .NET 8 solution structured with Clean Architecture to manage user personal data. It relies on modular layers (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`) plus per-layer xUnit test projects under `tests/*`.
+Academy.Users is a .NET 8 solution structured with Clean Architecture to manage user personal data. It relies on modular layers (`Domain`, `Application`, `Infrastructure`, `Presentation`, `API`).
 
 ### Solution layout
 - `src/Academy.Users.Domain`: core entities (`User`).
@@ -149,7 +148,6 @@ Academy.Users is a .NET 8 solution structured with Clean Architecture to manage 
 - `src/Academy.Users.Infrastructure`: EF Core configuration/repositories for SQLite or SQL Server.
 - `src/Academy.Users.Presentation`: minimal API endpoints and DTOs.
 - `src/Academy.Users.API`: host/composition root.
-- `tests/*`: xUnit projects.
 
 ### Prerequisites
 - .NET SDK 8.0+
