@@ -45,7 +45,7 @@ Academy.Users is a .NET 8 solution structured with Clean Architecture to manage 
      Email,
      PhoneNumber,
      Address,
-     PasswordHash,
+    Password,
      Status
    )
    VALUES
@@ -227,7 +227,7 @@ Academy.Users es una solución .NET 8 basada en la Arquitectura Limpia que permi
      Email,
      PhoneNumber,
      Address,
-     PasswordHash,
+    Password,
      Status
    )
    VALUES

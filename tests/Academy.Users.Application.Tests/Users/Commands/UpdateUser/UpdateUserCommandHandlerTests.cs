@@ -74,7 +74,7 @@ public class UpdateUserCommandHandlerTests
             Email = "ana@example.com",
             PhoneNumber = "5511122233",
             Address = "Direccion",
-            PasswordHash = "hash",
+            Password = "hash",
             Status = "ACTIVE",
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
@@ -103,7 +103,7 @@ public class UpdateUserCommandHandlerTests
             Email = "ana@example.com",
             PhoneNumber = "5511122233",
             Address = "Direccion",
-            PasswordHash = "hash",
+            Password = "hash",
             Status = "ACTIVE",
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
@@ -129,7 +129,7 @@ public class UpdateUserCommandHandlerTests
             Email = "ana@example.com",
             PhoneNumber = "5511122233",
             Address = "Direccion",
-            PasswordHash = "hash",
+            Password = "hash",
             Status = "ACTIVE",
             CreatedAt = DateTime.UtcNow.AddDays(-5),
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
@@ -185,7 +185,7 @@ public class UpdateUserCommandHandlerTests
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 Address = user.Address,
-                PasswordHash = user.PasswordHash,
+                Password = user.Password,
                 Status = user.Status,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt
