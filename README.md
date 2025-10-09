@@ -1,7 +1,21 @@
 # Academy.Users
 
 - [Español](#español)
+  - [Descripción general](#descripción-general)
+  - [Diseño de la solución](#diseño-de-la-solución)
+  - [Requisitos previos](#requisitos-previos)
+  - [Configuración inicial](#configuración-inicial)
+  - [Compilar y ejecutar](#compilar-y-ejecutar)
+  - [Endpoint expuesto](#endpoint-expuesto)
+  - [Proveedores de base de datos](#proveedores-de-base-de-datos)
 - [English](#english)
+  - [Overview](#overview)
+  - [Solution layout](#solution-layout)
+  - [Prerequisites](#prerequisites)
+  - [Initial setup](#initial-setup)
+  - [Build and run](#build-and-run)
+  - [API endpoint](#api-endpoint)
+  - [Database providers](#database-providers)
 
 ## Español
 
