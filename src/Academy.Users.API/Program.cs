@@ -35,6 +35,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPresentationEndpoints();
+app.MapPresentationModules();
 
 app.Run();

@@ -11,7 +11,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static WebApplication MapPresentationEndpoints(this WebApplication app)
+    public static WebApplication MapPresentationModules(this WebApplication app)
     {
         var apiGroup = app.MapGroup("/api/v1");
 
