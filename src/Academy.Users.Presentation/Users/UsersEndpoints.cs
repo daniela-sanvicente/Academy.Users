@@ -12,7 +12,7 @@ namespace Academy.Users.Presentation.Users;
 
     public static class UsersEndpoints
     {
-        public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
+    public static IEndpointRouteBuilder MapUsersModule(this IEndpointRouteBuilder endpoints)
         {
             endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
                 .WithName("UpdateUserPersonalInformation")

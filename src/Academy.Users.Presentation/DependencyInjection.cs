@@ -15,7 +15,7 @@ public static class DependencyInjection
     {
         var apiGroup = app.MapGroup("/api/v1");
 
-        apiGroup.MapUsersEndpoints();
+        apiGroup.MapUsersModule();
 
         return app;
     }
