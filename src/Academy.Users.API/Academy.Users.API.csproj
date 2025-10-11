@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d2c59108-77a0-4856-9c6d-9044d8a64aa7</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Academy.Users.Application\Academy.Users.Application.csproj" />
     <ProjectReference Include="..\Academy.Users.Presentation\Academy.Users.Presentation.csproj" />
+    <ProjectReference Include="..\Academy.Users.Infrastructure\Academy.Users.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
