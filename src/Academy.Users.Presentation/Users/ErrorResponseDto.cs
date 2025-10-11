@@ -1,17 +1,17 @@
 namespace Academy.Users.Presentation.Users;
 
 /// <summary>
-/// Respuesta estándar para reportar errores sin detalles de validación por campo.
+/// Standard error payload without per-field validation details.
 /// </summary>
 public class ErrorResponseDto
 {
     /// <summary>
-    /// Código legible que describe el tipo de error.
+    /// Machine-readable status that identifies the error category.
     /// </summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
-    /// Mensaje destinado al cliente para explicar el problema.
+    /// Human-readable message returned to the client.
     /// </summary>
     public string Message { get; set; } = string.Empty;
 }

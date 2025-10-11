@@ -1,27 +1,27 @@
 namespace Academy.Users.Presentation.Users;
 
 /// <summary>
-/// Cuerpo JSON que contiene los datos personales que el cliente desea actualizar.
+/// JSON payload that contains the personal data the client wants to update.
 /// </summary>
 public class UpdateUserRequestDto
 {
     /// <summary>
-    /// Nombre del cliente. Si se envía, no puede estar vacío y se almacena tal como se recibe.
+    /// Client first name. If provided, it cannot be empty and is stored as sent.
     /// </summary>
     public string? FirstName { get; set; }
 
     /// <summary>
-    /// Apellido del cliente. Si se envía, no puede estar vacío y se almacena tal como se recibe.
+    /// Client last name. If provided, it cannot be empty and is stored as sent.
     /// </summary>
     public string? LastName { get; set; }
 
     /// <summary>
-    /// Número telefónico del cliente. Se validan números mexicanos de 10 dígitos o con prefijo internacional 52.
+    /// Client phone number. Validates Mexican numbers (10 digits or +52 prefixed).
     /// </summary>
     public string? PhoneNumber { get; set; }
 
     /// <summary>
-    /// Dirección completa del cliente. Si se envía, no puede ser una cadena vacía.
+    /// Client address. If provided, it cannot be an empty string.
     /// </summary>
     public string? Address { get; set; }
 }

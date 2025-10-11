@@ -3,22 +3,22 @@ using System.Collections.Generic;
 namespace Academy.Users.Presentation.Users;
 
 /// <summary>
-/// Respuesta utilizada cuando la solicitud contiene datos inválidos y se requiere detallar los errores.
+/// Response used when the request contains invalid data and field errors need to be listed.
 /// </summary>
 public class ValidationErrorResponseDto
 {
     /// <summary>
-    /// Código legible que identifica que se produjo un error de validación.
+    /// Machine-readable status indicating a validation failure.
     /// </summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
-    /// Mensaje general que resume los errores encontrados.
+    /// General message summarizing the validation issues.
     /// </summary>
     public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    /// Conjunto de mensajes específicos para cada regla que falló.
+    /// Collection of specific error messages per failed rule.
     /// </summary>
     public IReadOnlyCollection<string> Errors { get; set; } = new List<string>();
 }

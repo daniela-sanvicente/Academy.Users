@@ -15,8 +15,8 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Academy Users API",
         Version = "v1",
-        Description = "API mínima para administrar datos personales de usuarios dentro del ecosistema Academy. " +
-                      "Expone operaciones para actualizar información de contacto y sirve como punto de integración con la capa Application basada en CQRS.",
+        Description = "Minimal API for managing user personal data within the Academy ecosystem. " +
+                      "Exposes operations to update contact information and integrates with the Application layer based on CQRS.",
         Contact = new OpenApiContact
         {
             Name = "Daniela Sanvicente",

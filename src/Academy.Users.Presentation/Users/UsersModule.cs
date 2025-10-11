@@ -7,36 +7,38 @@ using Microsoft.AspNetCore.Routing;
 namespace Academy.Users.Presentation.Users;
 
 public static class UsersModule
-    {
+{
     public static IEndpointRouteBuilder MapUsersModule(this IEndpointRouteBuilder endpoints)
-        {
-            endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
-                .WithSummary("Actualiza los datos personales de un usuario existente.")
-                .WithDescription("Permite modificar nombre, apellido, número telefónico y dirección de un usuario identificado por el parámetro userId. Al menos uno de los campos debe ser proporcionado en el cuerpo.")
-                .WithOpenApi(operation =>
-                {
-                    operation.OperationId = "UpdateUserPersonalInformation";
-                    operation.Summary = "Actualiza los datos personales de un usuario.";
-                    operation.Description = "Recibe un cuerpo JSON con los campos firstName, lastName, phoneNumber y address, valida el formato y guarda los cambios en la base de datos.";
-                    return operation;
-                });
+    {
+        endpoints.MapPut("/users/{userId:int}", HandleUpdateUser)
+            .WithSummary("Updates an existing user's personal data.")
+            .WithDescription("Allows modifying first name, last name, phone number or address for the specified userId. At least one field must be provided in the request body.")
+            .WithOpenApi(operation =>
+            {
+                operation.OperationId = "UpdateUserPersonalInformation";
+                operation.Summary = "Updates the personal data of a user.";
+                operation.Description = "Receives a JSON payload with firstName, lastName, phoneNumber and address, validates the format and persists the changes in the database.";
+                return operation;
+            });
 
-            return endpoints;
-        }
+        return endpoints;
+    }
 
-        internal static async Task<IResult> HandleUpdateUser(int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken)
+    internal static async Task<IResult> HandleUpdateUser(int userId, UpdateUserRequestDto request, ISender sender, CancellationToken cancellationToken)
     {
         if (request is null)
         {
             var errorPayload = new ErrorResponseDto
             {
                 Status = "InvalidData",
-                Message = "El cuerpo de la solicitud es obligatorio."
+                Message = "The request body is required."
             };
+
             return Results.BadRequest(errorPayload);
         }
 
         var command = new UpdateUserCommand(userId, request.FirstName, request.LastName, request.PhoneNumber, request.Address);
+
         var result = await sender.Send(command, cancellationToken);
 
         if (result.IsSuccess && result.Response is not null)
@@ -63,6 +65,7 @@ public static class UsersModule
                 Message = result.Message,
                 Errors = result.Errors
             };
+
             return Results.BadRequest(validationPayload);
         }
 
@@ -73,6 +76,7 @@ public static class UsersModule
                 Status = "UserNotFound",
                 Message = result.Message
             };
+
             return Results.BadRequest(userNotFoundPayload);
         }
 
@@ -81,6 +85,7 @@ public static class UsersModule
             Status = "ServerError",
             Message = result.Message
         };
+
         return Results.Json(failurePayload, statusCode: StatusCodes.Status500InternalServerError);
     }
 }
