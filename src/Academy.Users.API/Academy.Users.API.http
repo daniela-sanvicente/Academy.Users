@@ -1,6 +1,0 @@
-@Academy.Users.API_HostAddress = http://localhost:5120
-
-GET {{Academy.Users.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
